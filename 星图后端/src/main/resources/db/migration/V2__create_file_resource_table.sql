@@ -1,0 +1,20 @@
+CREATE TABLE `file_resource` (
+    `id`               BIGINT        NOT NULL AUTO_INCREMENT COMMENT '文件ID',
+    `user_id`          BIGINT        NOT NULL COMMENT '用户ID',
+    `file_name`        VARCHAR(255)  NOT NULL COMMENT '原始文件名',
+    `file_suffix`      VARCHAR(20)   NOT NULL COMMENT '文件后缀',
+    `file_path`        VARCHAR(512)  NOT NULL COMMENT '本地存储绝对路径',
+    `file_size`        BIGINT        NOT NULL DEFAULT 0 COMMENT '文件大小（字节）',
+    `file_category`    VARCHAR(32)   NOT NULL DEFAULT '' COMMENT '文件类别',
+    `parse_result`     TEXT                                COMMENT 'AI解析结果JSON',
+    `parse_status`     TINYINT       NOT NULL DEFAULT 0 COMMENT '解析状态 0待解析 1成功 2失败',
+    `parse_message`    VARCHAR(255)  NOT NULL DEFAULT '' COMMENT '解析失败原因',
+    `is_deleted`       TINYINT       NOT NULL DEFAULT 0 COMMENT '逻辑删除 0正常 1删除',
+    `create_time`      DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time`      DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY (`id`),
+    KEY `idx_user_id` (`user_id`),
+    KEY `idx_parse_status` (`parse_status`),
+    KEY `idx_file_category` (`file_category`),
+    UNIQUE KEY `uk_user_file_name_deleted` (`user_id`, `file_name`, `is_deleted`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='文件资源表';

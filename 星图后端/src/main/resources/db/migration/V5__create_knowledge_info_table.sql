@@ -1,0 +1,22 @@
+CREATE TABLE `knowledge_info` (
+    `id`                BIGINT       NOT NULL AUTO_INCREMENT COMMENT '知识点ID',
+    `user_id`           BIGINT       NOT NULL COMMENT '用户ID',
+    `knowledge_name`    VARCHAR(128) NOT NULL COMMENT '知识点名称',
+    `knowledge_tag`     VARCHAR(64)  NOT NULL COMMENT '知识分类标签',
+    `knowledge_content` TEXT         NOT NULL COMMENT '知识点详细内容',
+    `complete_content`  TEXT                     COMMENT 'AI补全后的完整内容',
+    `mastery_level`     TINYINT      NOT NULL DEFAULT 1 COMMENT '掌握度 1入门 2熟练 3精通',
+    `mastery_score`     DECIMAL(5,2) NOT NULL DEFAULT 50.00 COMMENT '掌握度评分 0-100',
+    `is_completed`      TINYINT      NOT NULL DEFAULT 0 COMMENT '是否已完成AI补全 0否 1是',
+    `knowledge_hash`    CHAR(32)     NOT NULL DEFAULT '' COMMENT '内容哈希值，用于去重比对',
+    `source_type`       TINYINT      NOT NULL DEFAULT 1 COMMENT '来源类型 1文件解析 2手动录入 3AI补全',
+    `is_deleted`        TINYINT      NOT NULL DEFAULT 0 COMMENT '逻辑删除 0正常 1删除',
+    `create_time`       DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `update_time`       DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY (`id`),
+    KEY `idx_user_id` (`user_id`),
+    KEY `idx_knowledge_tag` (`knowledge_tag`),
+    KEY `idx_mastery_level` (`mastery_level`),
+    KEY `idx_knowledge_hash` (`knowledge_hash`),
+    UNIQUE KEY `uk_user_knowledge_hash_deleted` (`user_id`, `knowledge_hash`, `is_deleted`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='知识点信息表';

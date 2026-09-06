@@ -1,0 +1,124 @@
+server:
+  port: 8080
+  tomcat:
+    connection-timeout: 150000
+
+spring:
+  application:
+    name: knowledge-star-map-agent
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/knowledge_star_map?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: ${DB_USER:root}
+    password: ${DB_PASSWORD:root}
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      idle-timeout: 30000
+      max-lifetime: 1800000
+      connection-timeout: 30000
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      database: 0
+      timeout: 5000ms
+      lettuce:
+        pool:
+          max-active: 20
+          max-idle: 10
+          min-idle: 5
+          max-wait: 3000ms
+
+  jackson:
+    date-format: yyyy-MM-dd'T'HH:mm:ss
+    time-zone: Asia/Shanghai
+    default-property-inclusion: non_null
+
+  servlet:
+    encoding:
+      enabled: true
+      force: true
+      charset: UTF-8
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+
+  flyway:
+    enabled: false
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      logic-delete-field: isDeleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+      id-type: auto
+  mapper-locations: classpath:mapper/**/*.xml
+
+logging:
+  level:
+    com.knowledgestarmap: debug
+    org.springframework.security: debug
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:knowledge-star-map-agent-secret-key-2024}
+    expiration-ms: 604800000
+
+  file:
+    upload-dir: ${FILE_UPLOAD_DIR:D:/knowledge-star-map/uploads}
+    max-single-size: 52428800
+    max-zip-extract-size: 209715200
+    max-zip-file-count: 1000
+    allowed-suffixes: pdf,md,txt,zip,png,jpg,jpeg,bmp,gif,java,xml,json,yaml,yml,properties,html,css,js,py,go,c,cpp,h,hpp,sql,csv,ts,tsx,vue,rb,rs,kt,swift,scala,cs,docx,pptx,xlsx
+
+  star-map:
+    invalidate-lock-ttl-seconds: 2
+    cache-ttl-minutes: 30
+    recalculate-lock-ttl-seconds: 30
+
+  agent:
+    max-rounds: 10
+    # —— 模型1：知识点生成（文件解析）—— AiServiceImpl 使用，保持不变 ——
+    llm-api-url: ${LLM_API_URL:https://tokenrhythm.studio/v1/chat/completions}
+    llm-api-key: ${API_KEY_1:}
+    llm-api-format: openai
+    llm-model: deepseek-v4-flash-0731
+    llm-timeout-ms: 120000
+    # —— 模型3：图片OCR（视觉模型）—— 识别图片中的文字，用于图片文件生成知识点 ——
+    ocr-llm-api-url: ${OCR_LLM_API_URL:https://tokenrhythm.studio/v1/chat/completions}
+    ocr-llm-api-key: ${API_KEY_3:}
+    ocr-llm-model: glm-5.3-flash
+    ocr-llm-timeout-ms: 120000
+    # —— 模型2：Agent对话 / 学习规划 / 简历生成 —— ChatLlmService 使用 ——
+    chat-llm-api-url: ${CHAT_LLM_API_URL:https://tokenrhythm.studio/v1/chat/completions}
+    chat-llm-api-key: ${API_KEY_2:}
+    chat-llm-model: deepseek-v4-flash-0731
+    chat-llm-timeout-ms: 300000
+    default-temperature: 0.5
+    default-max-tokens: 8192
+    max-history-chars: 12000
+    max-history-messages: 40
+    tool-max-tokens: >
+      {
+        "file_parse": 2048,
+        "knowledge_suggestion_generate": 1024,
+        "learning_plan_generate": 1024,
+        "resume_generate": 1024
+      }
+    tool-temperature: >
+      {
+        "file_parse": 0.3,
+        "knowledge_suggestion_generate": 0.5,
+        "learning_plan_generate": 0.3,
+        "resume_generate": 0.7
+      }
+    max-llm-calls-per-minute: 100
+    max-llm-calls-per-day: 3000

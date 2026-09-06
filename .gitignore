@@ -1,0 +1,133 @@
+# ============================================================
+# 知识星图 Agent v2.0
+# 前端：Vue3 + Vite + TypeScript（星图前端/）
+# 后端：Spring Boot 3.2 + Maven（星图后端/）
+# ============================================================
+
+# ---------- 操作系统 ----------
+.DS_Store
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+
+# ---------- IDE / 编辑器 ----------
+.idea/
+.vscode/
+.claude/
+*.iml
+*.swp
+*.swo
+*~
+.classpath
+.project
+.settings/
+*.code-workspace
+
+# ---------- 日志 ----------
+*.log
+logs/
+*.log.*
+nohup.out
+
+# ============ 前端：星图前端 ============
+# 依赖
+node_modules/
+# 构建产物
+dist/
+dist-ssr/
+*.local
+# TypeScript 编译缓存
+*.tsbuildinfo
+# 环境变量（只保留 .example 模板，真实密钥不入库）
+.env
+.env.*
+!.env.example
+# 包管理器日志
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ============ 后端：星图后端 ============
+# Maven 编译产物
+target/
+*.class
+*.jar
+*.war
+!.mvn/wrapper/maven-wrapper.jar
+# 本地环境配置（含真实数据库账号密码，不入库）
+application-dev.yml
+application-local.yml
+# 本地上传文件与日志目录
+logs/
+uploads/
+
+# ============ 测试 ============
+# Maven 标准测试目录（星图后端/src/test）
+**/src/test/
+# 本项目自定义分阶段测试目录（星图后端/src/testP2 ~ P9）
+**/src/testP*/
+# 前端测试
+__tests__/
+*.test.js
+*.test.ts
+*.spec.js
+*.spec.ts
+coverage/
+.nyc_output/
+
+# ============ Python（脚本 / 虚拟环境） ============
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+*.egg-info/
+
+# ============ 数据库 ============
+# 本地数据文件（SQLite / 嵌入式 DB）
+*.sqlite
+*.sqlite3
+*.db
+*.db3
+# MySQL 本地数据 / 导出备份（建表脚本 *.sql 仍正常提交）
+*.ibd
+*.frm
+*.myd
+*.myi
+*.sql.bak
+*.sql.backup
+*.dump
+backup/
+# Redis 持久化文件
+dump.rdb
+*.rdb
+*.aof
+
+# ============ 密钥 / 凭证 ============
+*.pem
+*.key
+*.p12
+*.keystore
+*.jks
+secrets/
+credentials*
+
+# ============ 内部设计/方案文档（不入库，仅保留各模块 README） ============
+/AI代码生成提示词.md
+/AI代码生成阶段方案.md
+/AI会话双模型分离-实现方案.md
+/Agent Prompt 模板.md
+/全局补充文档-v2.2.md
+/启动命令.txt
+/基础设施配置清单-补充.yml.md
+/基础设施配置清单.md
+/接口契约校验清单.md
+/知识星图Agentv2.1接口&Agent智能体规范文档-修订版.md
+/知识星图Agent完整模块架构说明书2.0 .md
+/知识星图Agent数据库设计2.0.md
+/知识星图深空换肤-实现方案.md
+/简历生成优化-实现方案.md
+/设计审查报告-问题清单.md
+/项目星图与项目检索-实现方案.md
+/项目经历生成与简历润色-实现方案.md
