@@ -141,18 +141,64 @@ npm run dev
 3. **测试代码不入库**：`星图后端/src/testP2~P9`、`src/test` 等测试目录已忽略；如需恢复测试，从本地历史单独管理。
 4. **AI 功能依赖密钥**：文件解析、Agent 对话、OCR、简历生成等能力需要配置 `API_KEY_1/2/3` 等环境变量才能正常调用，缺失时仅影响 AI 相关接口。
 
-## 七、云服务器一键部署（Ubuntu 22.04）
+## 七、云服务器部署（本地打包，服务器只运行产物）
 
-在服务器上复制执行下面**一条命令**即可（脚本自动安装依赖、构建前后端、初始化数据库、配置 Nginx 与开机自启）：
+> 建议在**本地 / 开发机**完成打包，把产物上传到服务器直接运行，避免低配服务器（1~2G 内存）现场执行 `mvn package` / `npm run build` 时内存不足（OOM）导致整机卡死。
+
+### 1. 本地打包
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/dongmuyunanfeng/Knowledge-Star-Map/master/deploy.sh -o /tmp/deploy.sh && sudo bash /tmp/deploy.sh
+# 后端 jar（仓库根目录下执行）
+cd 星图后端
+mvn clean package -Dmaven.test.skip=true
+# 产物：target/*.jar（忽略同目录下 *.original 那个无依赖包）
+
+# 前端静态文件
+cd ../星图前端
+npm install
+npm run build
+# 产物：dist/
 ```
 
-> **首次执行会交互式询问**数据库密码与 `API_KEY_1/2/3`（AI 功能依赖，可留空），填完自动完成全部部署；密钥只存服务器本地 `/opt/star-map/.env`，不入库。之后重跑无需再填。
->
-> 部署完成后浏览器访问 `http://你的服务器IP`。排查日志：`journalctl -u star-map -f`。
->
-> 脚本 `deploy.sh` 位于仓库根目录，可先下载自行审查后再执行。
+### 2. 上传产物到服务器
+
+下面路径均为示例，请替换成你自己的账号 / IP / 目录：
+
+```bash
+scp 星图后端/target/*.jar      root@<服务器IP>:/opt/star-map/app.jar
+scp -r 星图前端/dist           root@<服务器IP>:/opt/star-map/
+scp -r 星图后端/src/main/resources/db/migration  root@<服务器IP>:/opt/star-map/migration
+```
+
+### 3. 服务器端准备（一次性）
+
+装好 JDK 17 / MySQL 8 / Redis / Nginx，建库并按版本号顺序导入建表脚本：
+
+```bash
+mysql -u root -p -e "CREATE DATABASE IF NOT EXISTS knowledge_star_map DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+find /opt/star-map/migration -name 'V*.sql' | sort -V | while read f; do mysql -u root -p knowledge_star_map < "$f"; done
+```
+
+### 4. 运行后端 jar
+
+用环境变量覆盖数据库密码等敏感配置后启动：
+
+```bash
+export DB_HOST=localhost DB_PORT=3306 DB_USER=root DB_PASSWORD=<你的密码>
+export REDIS_HOST=localhost REDIS_PORT=6379
+export API_KEY_1=<key1> API_KEY_2=<key2> API_KEY_3=<key3>
+export JWT_SECRET=$(openssl rand -hex 32)
+export FILE_UPLOAD_DIR=/opt/star-map/uploads
+
+nohup java -jar /opt/star-map/app.jar > /opt/star-map/app.log 2>&1 &
+```
+
+### 5. 配置 Nginx
+
+`root` 指向 `/opt/star-map/dist`，`/api` 反向代理到 8080（可直接复用根目录 `deploy.sh` 第 8 节中的 server 配置）。
+
+浏览器访问 `http://<服务器IP>`。
+
+> 根目录 `deploy.sh` 仍保留「一条命令现场构建」的一键部署方式，但会在服务器上执行 Maven/Node 打包，低配机器可能卡死；服务器资源充足时仍可使用。
 
 更多细节见 [前端 README](星图前端/README.md) 与 [后端 README](星图后端/README.md)。
