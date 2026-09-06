@@ -146,10 +146,10 @@ npm run dev
 在服务器上复制执行下面**一条命令**即可（脚本自动安装依赖、构建前后端、初始化数据库、配置 Nginx 与开机自启）：
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/dongmuyunanfeng/Knowledge-Star-Map/master/deploy.sh | sudo bash
+curl -fsSL https://raw.githubusercontent.com/dongmuyunanfeng/Knowledge-Star-Map/master/deploy.sh -o /tmp/deploy.sh && sudo bash /tmp/deploy.sh
 ```
 
-> **首次运行**会生成 `/opt/star-map/.env` 模板并退出，请先编辑填好 `DB_PASSWORD` 与 `API_KEY_1/2/3`（AI 功能依赖，密钥只存服务器本地、不入库），然后**再次运行同一条命令**即可完成全部部署。
+> **首次执行会交互式询问**数据库密码与 `API_KEY_1/2/3`（AI 功能依赖，可留空），填完自动完成全部部署；密钥只存服务器本地 `/opt/star-map/.env`，不入库。之后重跑无需再填。
 >
 > 部署完成后浏览器访问 `http://你的服务器IP`。排查日志：`journalctl -u star-map -f`。
 >

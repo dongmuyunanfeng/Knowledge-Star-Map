@@ -4,11 +4,10 @@
 # 适用：Ubuntu 22.04 / Debian 12（CentOS/RHEL 走 yum 分支，尽力支持）
 #
 # 用法（一条命令）：
-#   curl -fsSL https://raw.githubusercontent.com/dongmuyunanfeng/Knowledge-Star-Map/master/deploy.sh | sudo bash
+#   curl -fsSL https://raw.githubusercontent.com/dongmuyunanfeng/Knowledge-Star-Map/master/deploy.sh -o /tmp/deploy.sh && sudo bash /tmp/deploy.sh
 #
 # 说明：
-#   首次运行会生成 /opt/star-map/.env 模板并退出，
-#   编辑填好 DB_PASSWORD 和 API_KEY_1/2/3 后再次运行同一条命令即可完成部署。
+#   首次执行会交互式询问数据库密码与 API Key（仅一次），填完自动完成全部部署。
 #   重复运行幂等，可安全重跑。
 #
 # 安全：所有密钥均从 /opt/star-map/.env 读取，脚本本身不含任何密钥。
@@ -46,34 +45,38 @@ esac
 
 # ---------------- 1. 环境文件准备（密钥唯一来源） ----------------
 mkdir -p "${ENV_DIR}"
+
 if [ ! -f "${ENV_FILE}" ]; then
-  cat > "${ENV_FILE}" <<'EOF'
-# ===== 知识星图部署配置（手动填写，切勿提交到仓库） =====
-# 必填：数据库密码（仅字母数字下划线，勿含引号/$ 等特殊字符）
-DB_PASSWORD=请改成强密码
-# 必填：三个 LLM API Key（不填则文件解析/Agent对话/OCR 等 AI 功能不可用）
-API_KEY_1=
-API_KEY_2=
-API_KEY_3=
-# 可选：对外访问域名或服务器 IP（Nginx server_name，留空则匹配所有）
-SERVER_NAME=
-# 可选：LLM 接口地址（默认走项目内置地址，一般留空）
-# LLM_API_URL=
-# CHAT_LLM_API_URL=
-# OCR_LLM_API_URL=
-# 以下通常无需修改
+  echo -e "\n${CYAN}首次运行：请配置部署参数（写入 ${ENV_FILE}，之后重跑无需再填）${NC}"
+  echo -e "${CYAN}--------------------------------------------------------------${NC}"
+
+  DB_PASSWORD=""
+  while [ -z "${DB_PASSWORD}" ]; do
+    read -rsp "数据库密码（必填，仅字母数字下划线）: " DB_PASSWORD < /dev/tty || true
+    echo ""
+  done
+
+  read -rp "API_KEY_1（文件解析/知识点生成，可留空）: " API_KEY_1 < /dev/tty || true
+  read -rp "API_KEY_2（Agent对话/简历，可留空）: " API_KEY_2 < /dev/tty || true
+  read -rp "API_KEY_3（图片OCR，可留空）: " API_KEY_3 < /dev/tty || true
+  read -rp "服务器域名或IP（留空则匹配所有）: " SERVER_NAME < /dev/tty || true
+
+  cat > "${ENV_FILE}" <<EOF
+DB_PASSWORD=${DB_PASSWORD}
+API_KEY_1=${API_KEY_1}
+API_KEY_2=${API_KEY_2}
+API_KEY_3=${API_KEY_3}
+SERVER_NAME=${SERVER_NAME}
 DB_HOST=localhost
 DB_PORT=3306
 REDIS_HOST=localhost
 REDIS_PORT=6379
 REDIS_PASSWORD=
 JWT_SECRET=
-FILE_UPLOAD_DIR=/data/knowledge-star-map/uploads
+FILE_UPLOAD_DIR=${UPLOAD_DIR}
 EOF
   chmod 600 "${ENV_FILE}"
-  warn "已生成配置模板：${ENV_FILE}"
-  warn "请先编辑该文件，填好 DB_PASSWORD 与 API_KEY_1/2/3，再重新运行本脚本。"
-  exit 0
+  ok "配置已保存到 ${ENV_FILE}"
 fi
 chmod 600 "${ENV_FILE}"
 
@@ -83,10 +86,6 @@ set -a
 . "${ENV_FILE}"
 set +a
 
-# 校验必填项
-if [ -z "${DB_PASSWORD:-}" ] || [ "${DB_PASSWORD}" = "请改成强密码" ]; then
-  die "请先在 ${ENV_FILE} 中填写 DB_PASSWORD"
-fi
 SERVER_NAME="${SERVER_NAME:-_}"   # 未填则 Nginx 匹配所有 host
 
 # 自动生成 JWT_SECRET
