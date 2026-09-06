@@ -181,7 +181,35 @@ find /opt/star-map/migration -name 'V*.sql' | sort -V | while read f; do mysql -
 
 ### 4. 运行后端 jar
 
-用环境变量覆盖数据库密码等敏感配置后启动：
+先把环境变量（数据库密码、AI Key 等）注入，再启动。两种方式任选其一：
+
+**方式 A：用 `.env` 文件注入（推荐）**
+
+把密钥写进一个 env 文件（每行 `KEY=VALUE`），启动时 `source` 加载（`set -a` 让文件里的变量自动导出）：
+
+```bash
+set -a; source /opt/star-map/backend.env; set +a
+nohup java -jar /opt/star-map/app.jar > /opt/star-map/app.log 2>&1 &
+```
+
+`backend.env` 内容示例：
+
+```bash
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=star
+DB_PASSWORD=<你的密码>
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_PASSWORD=
+JWT_SECRET=<随机串，可用 openssl rand -hex 32 生成>
+FILE_UPLOAD_DIR=/opt/star-map/uploads
+API_KEY_1=<key1>
+API_KEY_2=<key2>
+API_KEY_3=<key3>
+```
+
+**方式 B：逐条 `export` 注入（不想建文件时）**
 
 ```bash
 export DB_HOST=localhost DB_PORT=3306 DB_USER=root DB_PASSWORD=<你的密码>
@@ -192,6 +220,8 @@ export FILE_UPLOAD_DIR=/opt/star-map/uploads
 
 nohup java -jar /opt/star-map/app.jar > /opt/star-map/app.log 2>&1 &
 ```
+
+> 以上路径 / 账号 / 值均为示例，请按你自己的服务器目录与真实密钥替换。修改 env 后需重启后端才会重新加载。
 
 ### 5. 配置 Nginx
 
