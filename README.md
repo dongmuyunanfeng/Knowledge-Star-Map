@@ -141,4 +141,18 @@ npm run dev
 3. **测试代码不入库**：`星图后端/src/testP2~P9`、`src/test` 等测试目录已忽略；如需恢复测试，从本地历史单独管理。
 4. **AI 功能依赖密钥**：文件解析、Agent 对话、OCR、简历生成等能力需要配置 `API_KEY_1/2/3` 等环境变量才能正常调用，缺失时仅影响 AI 相关接口。
 
+## 七、云服务器一键部署（Ubuntu 22.04）
+
+在服务器上复制执行下面**一条命令**即可（脚本自动安装依赖、构建前后端、初始化数据库、配置 Nginx 与开机自启）：
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/dongmuyunanfeng/Knowledge-Star-Map/master/deploy.sh | sudo bash
+```
+
+> **首次运行**会生成 `/opt/star-map/.env` 模板并退出，请先编辑填好 `DB_PASSWORD` 与 `API_KEY_1/2/3`（AI 功能依赖，密钥只存服务器本地、不入库），然后**再次运行同一条命令**即可完成全部部署。
+>
+> 部署完成后浏览器访问 `http://你的服务器IP`。排查日志：`journalctl -u star-map -f`。
+>
+> 脚本 `deploy.sh` 位于仓库根目录，可先下载自行审查后再执行。
+
 更多细节见 [前端 README](星图前端/README.md) 与 [后端 README](星图后端/README.md)。
