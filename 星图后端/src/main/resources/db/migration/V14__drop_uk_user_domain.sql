@@ -1,3 +1,4 @@
 -- V14 移除 knowledge_star_map.uk_user_domain 唯一索引
 -- 原因：逻辑删除后无法新建同名domain（唯一约束仍生效），upsert逻辑改为查询is_deleted=0的记录
-ALTER TABLE knowledge_star_map DROP INDEX uk_user_domain;
+-- 注：V7 建表脚本已不再创建 uk_user_domain 索引，本迁移无实际 DDL 可执行。
+-- 若旧库仍存在该索引，可手动执行：ALTER TABLE knowledge_star_map DROP INDEX uk_user_domain;
