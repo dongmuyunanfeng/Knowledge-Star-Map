@@ -150,11 +150,11 @@ GRANT ALL PRIVILEGES ON ${DB_NAME}.* TO '${DB_USER}'@'localhost';
 FLUSH PRIVILEGES;
 SQL
 
-# 导入建表脚本（Flyway 已关闭，需手动按 V1~V20 顺序导入）
+# 导入建表脚本（Flyway 已关闭，需手动导入；用 sort -V 保证 V1<V2<...<V20 数字顺序）
 MIGRATION_DIR="${INSTALL_DIR}/星图后端/src/main/resources/db/migration"
-for f in "${MIGRATION_DIR}"/V*.sql; do
+while IFS= read -r f; do
   [ -f "$f" ] && mysql "${DB_NAME}" < "$f"
-done
+done < <(find "${MIGRATION_DIR}" -maxdepth 1 -name 'V*.sql' | sort -V)
 ok "数据库初始化完成"
 
 # ---------------- 5. 构建后端 ----------------
